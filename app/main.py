@@ -22,6 +22,13 @@ _rate_limits = defaultdict(list)
 async def lifespan(app: FastAPI):
     """Application startup and shutdown lifespan handler."""
     init_db()
+    # Auto-seed demo data on first startup (safe: checks for existing user)
+    try:
+        from seed import seed_database  # noqa: PLC0415
+        seed_database()
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).warning("Seed skipped: %s", exc)
     yield
 
 

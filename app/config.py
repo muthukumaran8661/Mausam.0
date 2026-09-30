@@ -1,5 +1,6 @@
 """Application configuration settings."""
 
+import os
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -8,7 +9,8 @@ class Settings(BaseSettings):
     app_name: str = "Mausam"
     environment: str = "development"
     debug: bool = True
-    port: int = 8000
+    # Render injects PORT automatically; fall back to 8000 locally
+    port: int = int(os.environ.get("PORT", 8000))
     database_url: str = "sqlite:///./mausam.db"
     weather_cache_ttl: int = 600  # 10 minutes in seconds
     cors_origins: str = "*"
@@ -25,6 +27,10 @@ class Settings(BaseSettings):
         if self.cors_origins == "*":
             return ["*"]
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment.lower() in ("production", "prod")
 
 
 @lru_cache
