@@ -1,9 +1,13 @@
-"""Main FastAPI application entry point for Mausam."""
-
+import sys
 import time
 from collections import defaultdict
 from contextlib import asynccontextmanager
 from pathlib import Path
+
+# Ensure project root is in sys.path so 'app.*' imports work from any working directory
+_ROOT = str(Path(__file__).resolve().parent.parent)
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
 
 from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
