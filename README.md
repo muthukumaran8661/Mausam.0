@@ -154,9 +154,12 @@ Key endpoints:
 
 ---
 
-## Deploying to Render
+## Deploy on Render
 
 Mausam is configured for deployment on [Render](https://render.com) as a Python Web Service.
+
+> [!IMPORTANT]
+> **Runtime Selection**: Create the service as Python 3 (or use Blueprint with `render.yaml`). The runtime cannot be changed after a service is created. If the service was created as Node, delete it and recreate it as a Python Web Service.
 
 ### Quick Deploy via Blueprint (Recommended)
 1. Push your repository to GitHub.
@@ -167,7 +170,7 @@ Mausam is configured for deployment on [Render](https://render.com) as a Python 
 If creating a Web Service manually in Render:
 
 - **Name**: `mausam`
-- **Runtime**: `Python`
+- **Runtime**: `Python 3`
 - **Build Command**: `pip install -r requirements.txt`
 - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 - **Health Check Path**: `/health`

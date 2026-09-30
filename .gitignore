@@ -27,3 +27,8 @@ Desktop.ini
 # IDE / Editor files
 .vscode/
 .idea/
+
+# Node / JS artifacts (prevent Render from mistaking project for Node)
+node_modules/
+package-lock.json
+
