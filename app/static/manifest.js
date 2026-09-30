@@ -1,90 +1,72 @@
 /**
  * Mausam PWA Manifest & Service Worker Registration Script
- * Generates the web app manifest dynamically via Blob URL and registers the Service Worker.
+ * - Injects a valid Web App Manifest via <link rel="manifest"> pointing to /static/manifest.json
+ * - Handles the beforeinstallprompt event to show an in-app Install button
+ * - Registers the Service Worker for offline support
  */
 
 (function () {
   'use strict';
 
-  const manifestData = {
-    name: 'Mausam - Personalized Weather',
-    short_name: 'Mausam',
-    description: 'Personalized mobile-first weather application with human-centric insights',
-    start_url: '/',
-    scope: '/',
-    display: 'standalone',
-    orientation: 'portrait-primary',
-    theme_color: '#1E88E5',
-    background_color: '#0B1E3F',
-    icons: [
-      {
-        src: '/static/icons/icon-192.png',
-        sizes: '192x192',
-        type: 'image/png',
-        purpose: 'any'
-      },
-      {
-        src: '/static/icons/icon-512.png',
-        sizes: '512x512',
-        type: 'image/png',
-        purpose: 'any'
-      },
-      {
-        src: '/static/icons/icon-maskable.png',
-        sizes: '512x512',
-        type: 'image/png',
-        purpose: 'maskable'
-      }
-    ],
-    shortcuts: [
-      {
-        name: 'Today',
-        short_name: 'Today',
-        description: "View today's weather and hero overview",
-        url: '/#hero',
-        icons: [{ src: '/static/icons/icon-192.png', sizes: '192x192' }]
-      },
-      {
-        name: 'Alerts',
-        short_name: 'Alerts',
-        description: 'Check active severe weather warnings',
-        url: '/#alerts',
-        icons: [{ src: '/static/icons/icon-192.png', sizes: '192x192' }]
-      },
-      {
-        name: 'Saved Cities',
-        short_name: 'Cities',
-        description: 'Manage and compare your saved locations',
-        url: '/#saved-cities',
-        icons: [{ src: '/static/icons/icon-192.png', sizes: '192x192' }]
-      }
-    ]
+  /* ─── 1. Inject <link rel="manifest"> pointing to static JSON ─── */
+  (function injectManifestLink() {
+    let link = document.querySelector('link[rel="manifest"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'manifest';
+      document.head.appendChild(link);
+    }
+    link.href = '/static/manifest.json';
+  })();
+
+  /* ─── 2. PWA Install Prompt ─── */
+  let deferredInstallPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+
+    // Show the install button if it exists in the DOM
+    const installBtn = document.getElementById('pwa-install-btn');
+    if (installBtn) {
+      installBtn.style.display = 'flex';
+    }
+    console.log('[Mausam PWA] Install prompt ready.');
+  });
+
+  // Called by the install button's onclick
+  window.triggerPwaInstall = async function () {
+    if (!deferredInstallPrompt) {
+      alert('App is already installed or your browser does not support installation.');
+      return;
+    }
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    console.log('[Mausam PWA] Install outcome:', outcome);
+    deferredInstallPrompt = null;
+
+    const installBtn = document.getElementById('pwa-install-btn');
+    if (installBtn) installBtn.style.display = 'none';
   };
 
-  // Convert manifest object to Blob and inject <link rel="manifest">
-  try {
-    const stringManifest = JSON.stringify(manifestData);
-    const blob = new Blob([stringManifest], { type: 'application/json' });
-    const manifestURL = URL.createObjectURL(blob);
+  // Hide install button once app is installed
+  window.addEventListener('appinstalled', () => {
+    console.log('[Mausam PWA] App installed successfully.');
+    const installBtn = document.getElementById('pwa-install-btn');
+    if (installBtn) installBtn.style.display = 'none';
+    deferredInstallPrompt = null;
+  });
 
-    let manifestLink = document.querySelector('link[rel="manifest"]');
-    if (!manifestLink) {
-      manifestLink = document.createElement('link');
-      manifestLink.rel = 'manifest';
-      document.head.appendChild(manifestLink);
-    }
-    manifestLink.href = manifestURL;
-  } catch (err) {
-    console.warn('[Mausam PWA] Could not inject dynamic manifest blob:', err);
-  }
-
-  // Register Service Worker
+  /* ─── 3. Register Service Worker ─── */
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker
         .register('/static/service-worker.js', { scope: '/' })
         .then((reg) => {
-          console.log('[Mausam PWA] Service Worker registered with scope:', reg.scope);
+          console.log('[Mausam PWA] Service Worker registered. Scope:', reg.scope);
+
+          // Check for updates every 60 seconds
+          setInterval(() => reg.update(), 60000);
         })
         .catch((err) => {
           console.warn('[Mausam PWA] Service Worker registration failed:', err);

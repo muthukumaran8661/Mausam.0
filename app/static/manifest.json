@@ -1,0 +1,72 @@
+{
+  "name": "Mausam - Personalized Weather",
+  "short_name": "Mausam",
+  "description": "Personalized mobile-first weather application with human-centric insights for commute, farming, fitness, and travel.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1E88E5",
+  "background_color": "#0B1E3F",
+  "categories": ["weather", "lifestyle", "productivity"],
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/static/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/static/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Today's Weather",
+      "short_name": "Today",
+      "description": "View today's weather overview",
+      "url": "/#hero",
+      "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Weather Alerts",
+      "short_name": "Alerts",
+      "description": "Check active severe weather warnings",
+      "url": "/#alerts",
+      "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Saved Cities",
+      "short_name": "Cities",
+      "description": "Manage and compare your saved locations",
+      "url": "/#saved-cities",
+      "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mausam - Weather Dashboard"
+    }
+  ]
+}
