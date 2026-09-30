@@ -172,7 +172,7 @@ If creating a Web Service manually in Render:
 - **Name**: `mausam`
 - **Runtime**: `Python 3`
 - **Build Command**: `pip install -r requirements.txt`
-- **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- **Start Command**: `python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 - **Health Check Path**: `/health`
 
 #### Environment Variables
