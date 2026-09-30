@@ -3,9 +3,12 @@
 import time
 from collections import defaultdict
 from contextlib import asynccontextmanager
+from pathlib import Path
+
 from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from fastapi.responses import JSONResponse
 
 from app.config import get_settings
@@ -13,6 +16,12 @@ from app.database import init_db
 from app.routers import home, users, cities, alerts
 
 settings = get_settings()
+
+# Base directory for relative paths (app/)
+BASE_DIR = Path(__file__).resolve().parent
+
+# Mount templates using path relative to this file
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 # In-memory sliding window IP rate limiter
 _rate_limits = defaultdict(list)
@@ -74,8 +83,8 @@ async def rate_limit_middleware(request: Request, call_next):
     return response
 
 
-# Mount static assets
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+# Mount static assets relative to this file
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
 # Mount Routers
 app.include_router(home.router)
@@ -87,9 +96,4 @@ app.include_router(alerts.router)
 @app.get("/health", tags=["Health"])
 def health_check():
     """Health check endpoint."""
-    return {
-        "status": "ok",
-        "app": settings.app_name,
-        "environment": settings.environment,
-        "timestamp": time.time(),
-    }
+    return {"status": "ok"}

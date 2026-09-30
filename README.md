@@ -151,3 +151,36 @@ Key endpoints:
 | `GET` | `/api/geocode?q={city}` | Search locations with coordinates |
 | `GET` | `/api/alerts?lat=&lon=` | Retrieve active severe meteorological alerts |
 | `GET` | `/health` | Application health check |
+
+---
+
+## Deploying to Render
+
+Mausam is configured for deployment on [Render](https://render.com) as a Python Web Service.
+
+### Quick Deploy via Blueprint (Recommended)
+1. Push your repository to GitHub.
+2. In the Render Dashboard, click **New +** > **Blueprint**.
+3. Connect your repository. Render will automatically read [`render.yaml`](render.yaml) and configure the service.
+
+### Manual Web Service Configuration
+If creating a Web Service manually in Render:
+
+- **Name**: `mausam`
+- **Runtime**: `Python`
+- **Build Command**: `pip install -r requirements.txt`
+- **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- **Health Check Path**: `/health`
+
+#### Environment Variables
+| Variable | Value | Description |
+|---|---|---|
+| `PYTHON_VERSION` | `3.11.9` | Pins Python 3.11 runtime |
+| `DATABASE_URL` | `sqlite:///./mausam.db` | Database connection URL |
+| `ENVIRONMENT` | `production` | Production environment flag |
+| `DEBUG` | `False` | Disables debug mode in production |
+| `CORS_ORIGINS` | `*` | Allowed CORS origins |
+
+> [!NOTE]
+> **Database Persistence on Free Tier**: Render's free-tier disk is ephemeral — any changes written to local SQLite (`mausam.db`) will reset when the instance restarts or redeploys. For production data persistence, create a free Render PostgreSQL database and set the `DATABASE_URL` environment variable to your PostgreSQL connection string (`postgresql://...`). Mausam automatically connects to PostgreSQL when this variable is provided.
+

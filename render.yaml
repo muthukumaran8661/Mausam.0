@@ -1,23 +1,11 @@
 services:
   - type: web
-    name: mausam-weather-app
+    name: mausam
     runtime: python
-    buildCommand: "pip install -r requirements.txt && python seed.py"
-    startCommand: "python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT"
-    envVars:
-      - key: APP_NAME
-        value: Mausam
-      - key: ENVIRONMENT
-        value: production
-      - key: DEBUG
-        value: "False"
-      - key: DATABASE_URL
-        value: sqlite:///./mausam.db
-      - key: WEATHER_CACHE_TTL
-        value: "600"
-      - key: CORS_ORIGINS
-        value: "*"
-      - key: RATE_LIMIT_PER_MINUTE
-        value: "120"
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
-    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9

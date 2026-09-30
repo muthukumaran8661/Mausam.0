@@ -19,8 +19,11 @@ from app.services.cache import (
 )
 from app.routers.alerts import get_weather_alerts
 
+from pathlib import Path
+
 router = APIRouter(tags=["Home"])
-templates = Jinja2Templates(directory="app/templates")
+BASE_DIR = Path(__file__).resolve().parent.parent
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 weather_provider = OpenMeteoWeatherProvider()
 
 
