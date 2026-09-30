@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mausam - Offline</title>
+  <style>
+    :root {
+      --bg: #090D16;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+      --accent: #38BDF8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      text-align: center;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 32px 24px;
+      max-width: 360px;
+      width: 100%;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+    .icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+      display: inline-block;
+      animation: pulse 2s infinite ease-in-out;
+    }
+    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+    p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 24px; }
+    .btn {
+      background: linear-gradient(135deg, #0284C7, #38BDF8);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      cursor: pointer;
+      min-height: 48px;
+      width: 100%;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+      transition: transform 0.15s ease;
+    }
+    .btn:active { transform: scale(0.97); }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">📡</div>
+    <h1>You are Offline</h1>
+    <p>Mausam couldn't reach the weather servers. Check your internet connection and try again, or view your saved cities cached data.</p>
+    <button class="btn" onclick="window.location.reload()">Retry Connection</button>
+  </div>
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#1E88E5">
+  <meta name="description" content="Mausam: Personalized Mobile-First Weather Application with Smart Human Insights">
+  <title>{{ app_title }}</title>
+  
+  <link rel="icon" type="image/svg+xml" href="/static/icons/icon.svg">
+  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="/static/styles.css">
+  
+  <!-- Dynamic PWA Manifest and SW Loader -->
+  <script src="/static/manifest.js" defer></script>
+</head>
+<body class="theme-system">
+
+  <main class="app-viewport" id="app">
+    
+    <!-- Offline Indicator Banner -->
+    <div id="offline-banner" class="offline-banner hidden" role="status" aria-live="polite">
+      <span>📡 Offline Mode — Showing cached weather</span>
+      <button id="retry-offline-btn" class="city-switcher-btn" style="padding: 2px 8px; min-height: 28px; font-size: 0.75rem;">Retry</button>
+    </div>
+
+    <!-- 1. Header Bar -->
+    <header class="header-bar" role="banner">
+      <div class="header-greeting">
+        <span class="greeting-text" id="greeting-text">Good day,</span>
+        <h1 class="user-name" id="user-display-name">Rahul</h1>
+      </div>
+      <div class="header-actions">
+        <button id="header-city-btn" class="city-switcher-btn" aria-label="Switch or search city" title="Change city">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <span id="current-city-label">New Delhi</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <button id="notif-bell-btn" class="icon-btn" aria-label="Weather notifications and alerts">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span id="notif-badge" class="badge-dot" style="display: none;"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 7. Severe Weather Alerts Banner (Dismissible) -->
+    <section id="alerts-section" aria-label="Severe Weather Alerts">
+      <div id="alert-banner-container"></div>
+    </section>
+
+    <!-- 2. Hero Weather Card (Dynamic Gradient) -->
+    <section class="hero-card hero-clear-day" id="hero-card" aria-label="Current Weather Overview">
+      <div class="hero-top-row">
+        <div class="hero-city-info">
+          <h2 id="hero-city-title">New Delhi</h2>
+          <span class="freshness-chip" id="freshness-chip">
+            <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#10B981;"></span>
+            <span id="freshness-text">Live data</span>
+          </span>
+        </div>
+        <div class="hero-icon-wrapper" id="hero-condition-icon" aria-hidden="true">
+          <!-- Animated Weather SVG Injected via app.js -->
+        </div>
+      </div>
+
+      <div class="hero-center-row">
+        <div class="hero-temp" id="hero-temp">28°</div>
+        <div class="hero-details">
+          <span class="hero-condition" id="hero-condition-text">Mainly Clear</span>
+          <span class="hero-feels-like" id="hero-feels-like">Feels like 30°</span>
+        </div>
+      </div>
+
+      <div class="hero-bottom-row">
+        <div class="hero-extremes">
+          <span id="hero-temp-high">H: 33°</span>
+          <span id="hero-temp-low">L: 22°</span>
+        </div>
+        <div id="hero-wind-summary" style="font-weight: 500; font-size: 0.85rem;">
+          Wind: 11 km/h E
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Personalized Smart Insight Strip -->
+    <section id="insights-section" aria-label="Personalized Weather Insights">
+      <div class="section-header">
+        <h3 class="section-title">
+          <span>✨</span>
+          <span data-i18n="smartInsights">Personalized Insights</span>
+        </h3>
+        <button id="view-all-insights-btn" class="view-all-link" aria-haspopup="dialog" data-i18n="viewAll">View All</button>
+      </div>
+      <div class="insights-rail" id="top-insights-list" role="region" aria-live="polite">
+        <!-- Rendered dynamically -->
+        <div class="insight-card skeleton" style="height: 60px;"></div>
+        <div class="insight-card skeleton" style="height: 60px;"></div>
+      </div>
+    </section>
+
+    <!-- 4. Hourly Forecast (Horizontally Scrollable 24 Hours) -->
+    <section id="hourly-section" aria-label="Hourly Forecast">
+      <div class="section-header">
+        <h3 class="section-title" data-i18n="hourlyForecast">Hourly Forecast</h3>
+        <span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="next24h">Next 24 Hours</span>
+      </div>
+      <div class="hourly-scroll-container" id="hourly-scroll-rail" tabindex="0" role="list">
+        <!-- Injected via app.js -->
+      </div>
+    </section>
+
+    <!-- 5. 7-Day Forecast (Compact with Temperature Gradient Bar) -->
+    <section id="daily-section" aria-label="7-Day Forecast">
+      <div class="section-header">
+        <h3 class="section-title" data-i18n="sevenDayForecast">7-Day Forecast</h3>
+      </div>
+      <div class="daily-container" id="daily-list-container" role="list">
+        <!-- Injected via app.js -->
+      </div>
+    </section>
+
+    <!-- 6. Key Metrics Grid (Bento Grid) -->
+    <section id="metrics-section" aria-label="Key Atmospheric Metrics">
+      <div class="section-header">
+        <h3 class="section-title" data-i18n="keyMetrics">Key Metrics</h3>
+      </div>
+      <div class="metrics-grid">
+        
+        <!-- Humidity -->
+        <div class="metric-card">
+          <div class="metric-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+            <span data-i18n="humidity">Humidity</span>
+          </div>
+          <div class="metric-value" id="metric-humidity">65%</div>
+          <span style="font-size: 0.72rem; color: var(--text-muted);" id="metric-dewpoint">Comfortable range</span>
+        </div>
+
+        <!-- Wind -->
+        <div class="metric-card">
+          <div class="metric-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path></svg>
+            <span data-i18n="wind">Wind</span>
+          </div>
+          <div class="metric-value" id="metric-wind">11 km/h</div>
+          <span style="font-size: 0.72rem; color: var(--text-muted);" id="metric-wind-dir">Direction: E</span>
+        </div>
+
+        <!-- UV Index -->
+        <div class="metric-card">
+          <div class="metric-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <span data-i18n="uvIndex">UV Index</span>
+          </div>
+          <div class="metric-value" id="metric-uv">7.5</div>
+          <span class="metric-badge" id="metric-uv-badge" style="background: #F59E0B;">High</span>
+        </div>
+
+        <!-- AQI -->
+        <div class="metric-card">
+          <div class="metric-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span data-i18n="aqi">Air Quality</span>
+          </div>
+          <div class="metric-value" id="metric-aqi">85</div>
+          <span class="metric-badge" id="metric-aqi-badge" style="background: #F59E0B;">Moderate</span>
+        </div>
+
+        <!-- Visibility -->
+        <div class="metric-card">
+          <div class="metric-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span data-i18n="visibility">Visibility</span>
+          </div>
+          <div class="metric-value" id="metric-visibility">10 km</div>
+          <span style="font-size: 0.72rem; color: var(--text-muted);" id="metric-vis-label">Clear roadway</span>
+        </div>
+
+        <!-- Pressure -->
+        <div class="metric-card">
+          <div class="metric-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span data-i18n="pressure">Pressure</span>
+          </div>
+          <div class="metric-value" id="metric-pressure">1012 hPa</div>
+          <span style="font-size: 0.72rem; color: var(--text-muted);">Stable atmosphere</span>
+        </div>
+
+        <!-- Sunrise / Sunset (Spans 2 columns) -->
+        <div class="metric-card" style="grid-column: span 2;">
+          <div class="metric-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="2" x2="12" y2="9"></line><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"></line><line x1="1" y1="18" x2="3" y2="18"></line><line x1="21" y1="18" x2="23" y2="18"></line><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"></line><line x1="23" y1="22" x2="1" y2="22"></line></svg>
+            <span data-i18n="sunCycle">Sun Cycle</span>
+          </div>
+          <div style="display: flex; justify-content: space-around; margin-top: 6px;">
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="sunrise">Sunrise</span>
+              <div style="font-size: 1.15rem; font-weight: 700;" id="metric-sunrise">06:05</div>
+            </div>
+            <div style="border-left: 1px solid var(--border-subtle); padding-left: 18px;">
+              <span style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="sunset">Sunset</span>
+              <div style="font-size: 1.15rem; font-weight: 700;" id="metric-sunset">18:30</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 8. Saved Cities Mini-Cards Rail -->
+    <section id="saved-cities-section" aria-label="Saved Cities">
+      <div class="section-header">
+        <h3 class="section-title" data-i18n="savedCities">Saved Cities</h3>
+        <button id="add-city-btn" class="view-all-link" data-i18n="addCity">+ Add City</button>
+      </div>
+      <div class="saved-cities-rail" id="saved-cities-rail" role="list">
+        <!-- Injected via app.js -->
+      </div>
+    </section>
+
+    <!-- 9. Interest-Based Card -->
+    <section id="interest-card-section" aria-label="Lifestyle & Interest Weather Advisor">
+      <div class="interest-card" id="interest-card">
+        <div class="interest-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span id="interest-icon" style="font-size: 1.3rem;">🚗</span>
+            <strong id="interest-title" style="font-size: 0.95rem;">Commute Weather Outlook</strong>
+          </div>
+          <span class="interest-badge" id="interest-badge">Active</span>
+        </div>
+        <p class="interest-body" id="interest-body">
+          Evening commute around 18:00 has pleasant travel weather with clear skies and moderate breeze.
+        </p>
+      </div>
+    </section>
+
+    <!-- 10. Footer Bottom Navigation Dock -->
+    <nav class="bottom-nav" role="navigation" aria-label="Main Navigation">
+      <button class="nav-item active" data-nav="home" aria-label="Home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <span data-i18n="navHome">Home</span>
+      </button>
+      <button class="nav-item" data-nav="forecast" aria-label="Forecast">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <span data-i18n="navForecast">Forecast</span>
+      </button>
+      <button class="nav-item" data-nav="map" aria-label="Weather Map">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+        <span data-i18n="navMap">Map</span>
+      </button>
+      <button class="nav-item" data-nav="cities" aria-label="Saved Cities">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        <span data-i18n="navCities">Cities</span>
+      </button>
+      <button class="nav-item" data-nav="profile" aria-label="Settings and Profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span data-i18n="navProfile">Profile</span>
+      </button>
+    </nav>
+
+    <!-- Modal 1: All Insights Bottom Sheet -->
+    <div id="all-insights-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="all-insights-title">
+      <div class="sheet-panel">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h3 class="sheet-title" id="all-insights-title" data-i18n="allInsightsTitle">All Smart Insights</h3>
+          <button class="icon-btn" id="close-insights-modal" aria-label="Close sheet">✕</button>
+        </div>
+        <div id="all-insights-full-list" class="insights-rail"></div>
+      </div>
+    </div>
+
+    <!-- Modal 2: Search & Add City Modal -->
+    <div id="city-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="city-modal-title">
+      <div class="sheet-panel">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h3 class="sheet-title" id="city-modal-title" data-i18n="searchCityTitle">Search Location</h3>
+          <button class="icon-btn" id="close-city-modal" aria-label="Close modal">✕</button>
+        </div>
+        <div class="search-input-wrapper">
+          <input type="text" id="city-search-input" class="search-input" placeholder="Type city (e.g. Mumbai, Tokyo)..." autocomplete="off" aria-label="Search city name">
+        </div>
+        <div class="search-results-list" id="city-search-results" role="listbox"></div>
+      </div>
+    </div>
+
+    <!-- Modal 3: Settings & Preferences Modal -->
+    <div id="settings-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+      <div class="sheet-panel">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h3 class="sheet-title" id="settings-modal-title" data-i18n="settingsTitle">Preferences & Profile</h3>
+          <button class="icon-btn" id="close-settings-modal" aria-label="Close settings">✕</button>
+        </div>
+
+        <form id="preferences-form">
+          <!-- Units -->
+          <div class="settings-group">
+            <span class="settings-label" data-i18n="tempUnits">Temperature Units</span>
+            <div class="toggle-btn-group">
+              <button type="button" class="toggle-btn active" id="btn-unit-metric">°C Metric (km/h)</button>
+              <button type="button" class="toggle-btn" id="btn-unit-imperial">°F Imperial (mph)</button>
+            </div>
+          </div>
+
+          <!-- Language -->
+          <div class="settings-group">
+            <span class="settings-label" data-i18n="appLanguage">Language (भाषा / மொழி)</span>
+            <div class="toggle-btn-group">
+              <button type="button" class="toggle-btn active" id="btn-lang-en">English</button>
+              <button type="button" class="toggle-btn" id="btn-lang-hi">हिंदी</button>
+              <button type="button" class="toggle-btn" id="btn-lang-ta">தமிழ்</button>
+            </div>
+          </div>
+
+          <!-- Lifestyle Interests -->
+          <div class="settings-group">
+            <span class="settings-label" data-i18n="lifestyleInterests">Lifestyle Interests</span>
+            <div class="chip-selector" id="interests-selector">
+              <span class="chip-item active" data-val="commute">🚗 Commute</span>
+              <span class="chip-item active" data-val="fitness">🏃 Fitness & Running</span>
+              <span class="chip-item" data-val="farming">🌱 Farming & Crops</span>
+              <span class="chip-item" data-val="travel">✈️ Travel & Weekend</span>
+            </div>
+          </div>
+
+          <!-- Sensitivities -->
+          <div class="settings-group">
+            <span class="settings-label" data-i18n="weatherSensitivities">Sensitivities</span>
+            <div class="chip-selector" id="sensitivities-selector">
+              <span class="chip-item active" data-val="heat">☀️ Heat Sensitive</span>
+              <span class="chip-item" data-val="cold">❄️ Cold Sensitive</span>
+              <span class="chip-item active" data-val="allergies">😷 Allergies / AQI</span>
+              <span class="chip-item" data-val="rain">🌧️ Rain Sensitive</span>
+            </div>
+          </div>
+
+          <!-- Commute Times -->
+          <div class="settings-group">
+            <span class="settings-label" data-i18n="commuteTimes">Daily Commute Times</span>
+            <div class="time-input-row">
+              <div>
+                <label for="time-morning" style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="morningCommute">Morning</label>
+                <input type="time" id="time-morning" class="time-input" value="08:30">
+              </div>
+              <div>
+                <label for="time-evening" style="font-size: 0.75rem; color: var(--text-muted);" data-i18n="eveningCommute">Evening</label>
+                <input type="time" id="time-evening" class="time-input" value="18:00">
+              </div>
+            </div>
+          </div>
+
+          <button type="button" id="save-preferences-btn" class="save-settings-btn" data-i18n="savePreferences">Save Preferences</button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Application Logic -->
+  <script src="/static/app.js"></script>
+</body>
+</html>

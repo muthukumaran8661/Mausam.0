@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B1E3F" />
+      <stop offset="100%" stop-color="#1E3A8A" />
+    </linearGradient>
+    <linearGradient id="sun-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+    <linearGradient id="cloud-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#E2E8F0" />
+    </linearGradient>
+    <linearGradient id="rain-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded canvas -->
+  <rect width="512" height="512" rx="112" fill="url(#bg-grad)" />
+
+  <g filter="url(#shadow)">
+    <!-- Sun -->
+    <circle cx="210" cy="210" r="80" fill="url(#sun-grad)" />
+    
+    <!-- Sun rays -->
+    <path d="M210 90 L210 115 M210 305 L210 330 M90 210 L115 210 M305 210 L330 210 M125 125 L143 143 M277 277 L295 295 M125 295 L143 277 M277 143 L295 125" stroke="#FBBF24" stroke-width="12" stroke-linecap="round" opacity="0.85" />
+
+    <!-- Cloud -->
+    <path d="M 230 330 
+             L 370 330 
+             A 50 50 0 0 0 370 230 
+             A 40 40 0 0 0 335 195 
+             A 65 65 0 0 0 215 215 
+             A 50 50 0 0 0 180 270 
+             A 50 50 0 0 0 230 330 Z" 
+          fill="url(#cloud-grad)" />
+
+    <!-- Rain Drops -->
+    <line x1="240" y1="360" x2="225" y2="400" stroke="url(#rain-grad)" stroke-width="10" stroke-linecap="round" />
+    <line x1="285" y1="365" x2="270" y2="405" stroke="url(#rain-grad)" stroke-width="10" stroke-linecap="round" />
+    <line x1="330" y1="360" x2="315" y2="400" stroke="url(#rain-grad)" stroke-width="10" stroke-linecap="round" />
+  </g>
+</svg>
